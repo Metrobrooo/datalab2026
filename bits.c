@@ -53,17 +53,17 @@ int bitXor(int x, int y) {
  */
 int samesign(int x, int y) {
     if((!x)&&(!y)){
-        return 1;//两个都是0，返回1
+        return 1;//x and y both 0
     }
 
     if(!x){return 0;}
-    if(!y){return 0;}//只有一个是0，返回0
+    if(!y){return 0;}//only one 0
 
     if((x>>31)^(y>>31)){
-        return 0;//最高位不同
+        return 0;//different
     }
     else{
-        return 1;//最高位相同
+        return 1;//same
     }
 }
 
@@ -77,7 +77,17 @@ int samesign(int x, int y) {
  *   Difficulty: 4
  */
 int logtwo(int v) {
-    return 2;
+    int a = (v>0xFFFF)<<4;
+    v = v>>a;
+    int b = (v>0xFF)<<3;
+    v = v>>b;
+    int c = (v>0xF)<<2;
+    v = v>>c;
+    int d = (v>3)<<1;
+    v = v>>d;
+    int e = v>1;
+    int res = a|b|c|d|e;
+    return res;
 }
 
 /*
