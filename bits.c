@@ -100,7 +100,14 @@ int logtwo(int v) {
  *    Difficulty: 2
  */
 int byteSwap(int x, int n, int m) {
-    return 2;
+    int nn = n<<3;
+    int mm = m<<3;
+    int Bn = (x>>nn)&0xFF;
+    int Bm = (x>>mm)&0xFF;
+    int a =~((0xFF<<mm)|(0xFF<<nn));
+    int Bs = a&x;
+    int res = Bs|(Bn<<mm)|(Bm<<nn);
+    return res;
 }
 
 /*
@@ -112,7 +119,16 @@ int byteSwap(int x, int n, int m) {
  *   Difficulty: 3
  */
 unsigned reverse(unsigned v) {
-    return 2;
+    unsigned res = 0;
+    unsigned low;
+    for(int i =32;i;i=i-1){
+        low = v&0x1;
+        res = res<<1;
+        res = res|low;
+        v = v>>1;
+    }
+    
+    return res;
 }
 
 /*
@@ -124,7 +140,11 @@ unsigned reverse(unsigned v) {
  *   Difficulty: 3
  */
 int logicalShift(int x, int n) {
-    return 2;
+    int res;
+    x = x>>n;
+    int mask = ~(((1<<31)>>n)<<1);//(1<<31) is regarded as int, 0x80000000 is regarded as unsigned
+    res = mask&x;
+    return res;
 }
 
 /*
