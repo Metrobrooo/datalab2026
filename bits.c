@@ -168,7 +168,43 @@ int leftBitCount(int x) {
  *   Difficulty: 4
  */
 unsigned float_i2f(int x) {
-    return 2;
+    unsigned S, M;
+    int high, shift;
+    unsigned truncated, half;
+
+    if (x == 0) return 0;
+
+    S = 0;
+    if (x < 0) {
+        S = 0x80000000;
+        x = -x;
+    }
+
+    high = 31;
+    int x_copy = x;
+    while (!(x_copy & 0x80000000)) {
+        x_copy <<= 1;
+        high--;
+    }
+
+    if (high > 23) {
+        shift = high - 23;
+        truncated = x & ((1 << shift) - 1);
+        half = 1 << (shift - 1);
+        M = (x >> shift) & 0x7FFFFF;
+
+        if (truncated > half) M++;
+        else if (truncated == half) M += M & 1;
+
+        if (M == 0x800000) {
+            M = 0;
+            high++;
+        }
+    } else {
+        M = (x << (23 - high)) & 0x7FFFFF;
+    }
+
+    return S | ((high + 127) << 23) | M;
 }
 
 /*
