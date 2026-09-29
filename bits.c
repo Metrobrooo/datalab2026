@@ -279,7 +279,28 @@ unsigned floatScale2(unsigned uf) {
  *   Difficulty: 3
  */
 int float64_f2i(unsigned uf1, unsigned uf2) {
-    return 2;
+    int s;
+    int exponent;
+    int high;
+    int value;
+    
+    s = uf2>>31;
+    exponent = (uf2>>20)&0x7FF;
+    exponent -= 1023;
+
+    if(exponent<0){return 0;}
+    if(exponent>30){return 0x80000000;}
+
+    high = (uf2&0xFFFFF)|0x100000;
+
+    if(exponent<=20){
+        value = high>>(20-exponent);
+    }
+    else{
+        value = (high<<(exponent-20))|(uf1>>(52-exponent));
+    }
+    if(s){return -value;}
+    return value;
 }
 
 /*
@@ -296,5 +317,10 @@ int float64_f2i(unsigned uf1, unsigned uf2) {
  *   Difficulty: 4
  */
 unsigned floatPower2(int x) {
-    return 2;
+    if(x<-149){return 0;}//-126-23
+    if(x<-126){//subnormal
+       return 1<<(149+x); 
+    }
+    if(x>127){return 0x7F800000;}//pos-inf
+    return (x+127)<<23;
 }
