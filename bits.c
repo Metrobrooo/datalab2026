@@ -156,7 +156,32 @@ int logicalShift(int x, int n) {
  *   Difficulty: 4
  */
 int leftBitCount(int x) {
-    return 2;
+    int count = 0;
+    int step;
+
+    step = !(~(x >> 16)) << 4;
+    count = count + step;
+    x = x << step;
+
+    step = !(~(x >> 24)) << 3;
+    count = count + step;
+    x = x << step;
+
+    step = !(~(x >> 28)) << 2;
+    count = count + step;
+    x = x << step;
+
+    step = !(~(x >> 30)) << 1;
+    count = count + step;
+    x = x << step;
+
+    step = !(~(x >> 31));
+    count = count + step;
+    x = x << step;
+
+    count = count + ((x >> 31) & 1);
+
+    return count;
 }
 
 /*
@@ -185,16 +210,16 @@ unsigned float_i2f(int x) {
     while (!(x_copy & 0x80000000)) {
         x_copy <<= 1;
         high--;
-    }
+    }//highest 1
 
-    if (high > 23) {
-        shift = high - 23;
-        truncated = x & ((1 << shift) - 1);
-        half = 1 << (shift - 1);
-        M = (x >> shift) & 0x7FFFFF;
+    if (high > 23) {//high在23位上的时候需要做舍入
+        shift = high - 23;//相差的位数
+        truncated = x & ((1 << shift) - 1);//取得x多余的几位
+        half = 1 << (shift - 1);//低的shift位全是1
+        M = (x >> shift) & 0x7FFFFF;//把x右移到23位，把最高的1置0
 
-        if (truncated > half) M++;
-        else if (truncated == half) M += M & 1;
+        if (truncated > half) M++;//大于一半就进位
+        else if (truncated == half) M += M & 1;//正好等于一半时向偶数舍入，如果原本低位是1就再进1，否则不变
 
         if (M == 0x800000) {
             M = 0;
@@ -202,7 +227,7 @@ unsigned float_i2f(int x) {
         }
     } else {
         M = (x << (23 - high)) & 0x7FFFFF;
-    }
+    }//high在23位之下，左移到对应位置再把最高的1置0（尾码只存小数部分）
 
     return S | ((high + 127) << 23) | M;
 }
@@ -219,7 +244,25 @@ unsigned float_i2f(int x) {
  *   Difficulty: 4
  */
 unsigned floatScale2(unsigned uf) {
-    return 2;
+    unsigned S = uf & 0x80000000;
+    unsigned E = (uf >> 23) & 0xFF;
+    unsigned M = uf & 0x7FFFFF;
+
+    if (E == 0xFF) return uf;//NaN          
+
+    if (E == 0) {
+        if (M == 0) return uf;//0          
+        M <<= 1;                        
+        if (M & 0x800000) {//subnormal
+            E = 1;
+            M &= 0x7FFFFF;
+        }
+    } 
+    else {//normal
+        E++;                            
+    }
+
+    return S | (E << 23) | M;
 }
 
 /*
